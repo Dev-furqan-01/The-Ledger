@@ -8,20 +8,21 @@ class SplashIdentity extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           content.title,
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-            color: AppColors.primary,
+            color: colorScheme.primary,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           content.subtitle,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: AppColors.outline.withOpacity(0.7),
+            color: colorScheme.outline.withOpacity(0.7),
           ),
         ),
       ],

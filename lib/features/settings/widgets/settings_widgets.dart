@@ -13,6 +13,7 @@ class SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -20,18 +21,18 @@ class SettingsSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
           child: Text(
             title.toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.5,
-              color: AppColors.outline,
+              color: colorScheme.outline,
               fontFamily: 'Inter',
             ),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: AppColors.surfaceContainerLow,
+            color: colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(16),
           ),
           clipBehavior: Clip.antiAlias,
@@ -67,6 +68,7 @@ class SettingsItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -77,12 +79,12 @@ class SettingsItem extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: iconContainerColor ?? AppColors.surfaceContainerHigh,
+                color: iconContainerColor ?? colorScheme.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
-                color: iconColor ?? AppColors.primary,
+                color: iconColor ?? colorScheme.primary,
                 size: 20,
               ),
             ),
@@ -93,20 +95,20 @@ class SettingsItem extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                      color: colorScheme.primary,
                       fontFamily: 'Inter',
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.normal,
-                      color: AppColors.outline,
+                      color: colorScheme.outline,
                       fontFamily: 'Inter',
                     ),
                   ),
@@ -116,9 +118,9 @@ class SettingsItem extends StatelessWidget {
             if (trailing != null)
               trailing!
             else
-              const Icon(
+              Icon(
                 Icons.chevron_right,
-                color: AppColors.outlineVariant,
+                color: colorScheme.outlineVariant,
                 size: 20,
               ),
           ],
@@ -142,10 +144,11 @@ class ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(
@@ -154,7 +157,7 @@ class ProfileCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.surfaceContainerLowest,
+            color: colorScheme.surfaceContainerLowest,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -164,9 +167,9 @@ class ProfileCard extends StatelessWidget {
                 height: 64,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primaryFixed,
+                  color: colorScheme.primaryFixed,
                   border: Border.all(
-                    color: AppColors.surfaceContainerLow,
+                    color: colorScheme.surfaceContainerLow,
                     width: 4,
                   ),
                   image: DecorationImage(
@@ -182,10 +185,10 @@ class ProfileCard extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: colorScheme.primary,
                         fontFamily: 'Manrope',
                         letterSpacing: -0.5,
                       ),
@@ -193,19 +196,19 @@ class ProfileCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Wealth Management ID: $wealthId',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.outline,
+                        color: colorScheme.outline,
                         fontFamily: 'Inter',
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
-                color: AppColors.outlineVariant,
+                color: colorScheme.outlineVariant,
               ),
             ],
           ),

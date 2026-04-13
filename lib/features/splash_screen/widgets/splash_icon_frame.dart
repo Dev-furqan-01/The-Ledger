@@ -6,19 +6,20 @@ class SplashIconFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: 120,
       height: 120,
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: colorScheme.surfaceContainerLowest,
         shape: BoxShape.circle,
         border: Border.all(
-          color: AppColors.outlineVariant.withOpacity(0.2),
+          color: colorScheme.outlineVariant.withOpacity(0.2),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.onBackground.withOpacity(0.04),
+            color: colorScheme.onSurface.withOpacity(0.04),
             offset: const Offset(0, 12),
             blurRadius: 24,
           ),
@@ -32,10 +33,10 @@ class SplashIconFrame extends StatelessWidget {
             height: 80,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) {
-              return const Icon(
+              return Icon(
                 Icons.account_balance_wallet_outlined,
                 size: 48,
-                color: AppColors.primary,
+                color: colorScheme.primary,
               );
             },
           ),

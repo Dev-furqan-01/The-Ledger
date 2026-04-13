@@ -19,14 +19,15 @@ class TransactionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settingsService = SettingsService();
+    final colorScheme = Theme.of(context).colorScheme;
     final bool isDebit = transaction.type == TransactionType.debit;
-    final Color accentColor = isDebit ? AppColors.error : AppColors.onTertiaryContainer;
+    final Color accentColor = isDebit ? colorScheme.error : colorScheme.onTertiaryContainer;
     final String formattedDate = DateFormat('MMM d, y').format(transaction.date);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow.withOpacity(0.5),
+        color: colorScheme.surfaceContainerLow.withOpacity(0.5),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Material(
@@ -42,13 +43,13 @@ class TransactionItem extends StatelessWidget {
                 Container(
                   width: 48,
                   height: 48,
-                  decoration: const BoxDecoration(
-                    color: AppColors.surfaceContainerHighest,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     transaction.icon,
-                    color: AppColors.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                     size: 20,
                   ),
                 ),
@@ -59,17 +60,17 @@ class TransactionItem extends StatelessWidget {
                     children: [
                       Text(
                         transaction.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
-                          color: AppColors.onSurface,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '$formattedDate • ${transaction.category}',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: AppColors.onSurfaceVariant,
+                              color: colorScheme.onSurfaceVariant,
                               fontSize: 11,
                             ),
                       ),

@@ -12,6 +12,7 @@ class BalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settingsService = SettingsService();
+    final colorScheme = Theme.of(context).colorScheme;
     double totalCredit = 0;
     double totalDebit = 0;
 
@@ -30,15 +31,15 @@ class BalanceCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.primary, AppColors.primaryContainer],
+          colors: [colorScheme.primary, colorScheme.primaryContainer],
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.2),
+            color: colorScheme.primary.withOpacity(0.2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -53,7 +54,7 @@ class BalanceCard extends StatelessWidget {
               width: 150,
               height: 150,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: colorScheme.onPrimary.withOpacity(0.05),
                 shape: BoxShape.circle,
               ),
             ),
@@ -64,7 +65,7 @@ class BalanceCard extends StatelessWidget {
               Text(
                 'REMAINING BALANCE',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Colors.white.withOpacity(0.7),
+                      color: colorScheme.onPrimary.withOpacity(0.7),
                       fontWeight: FontWeight.bold,
                     ),
               ),
@@ -79,7 +80,7 @@ class BalanceCard extends StatelessWidget {
                       Text(
                         currency.symbol,
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              color: Colors.white.withOpacity(0.6),
+                              color: colorScheme.onPrimary.withOpacity(0.6),
                               fontWeight: FontWeight.w600,
                             ),
                       ),
@@ -87,7 +88,7 @@ class BalanceCard extends StatelessWidget {
                       Text(
                         currencyFormat.format(balance),
                         style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                              color: Colors.white,
+                              color: colorScheme.onPrimary,
                               fontSize: 42,
                               fontWeight: FontWeight.w800,
                             ),
@@ -110,10 +111,10 @@ class BalanceCard extends StatelessWidget {
                           left: 0,
                           child: CircleAvatar(
                             radius: 18,
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: colorScheme.primary,
                             child: CircleAvatar(
                               radius: 16,
-                              backgroundColor: Colors.white,
+                              backgroundColor: colorScheme.surface,
                               backgroundImage: const AssetImage('assets/images/hand icon.png'),
                             ),
                           ),
@@ -122,10 +123,10 @@ class BalanceCard extends StatelessWidget {
                           left: 24,
                           child: CircleAvatar(
                             radius: 18,
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: colorScheme.primary,
                             child: CircleAvatar(
                               radius: 16,
-                              backgroundColor: Colors.grey[300],
+                              backgroundColor: colorScheme.surfaceVariant,
                               backgroundImage: const NetworkImage('https://i.pravatar.cc/150?u=2'),
                             ),
                           ),

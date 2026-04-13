@@ -1,6 +1,14 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:file_picker/file_picker.dart';
+import '../../dashboard/models/transaction_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/settings_service.dart';
+import '../../../local_storage/database_service.dart';
 import '../models/currency_model.dart';
 import '../constants/settings_constants.dart';
 import '../widgets/settings_widgets.dart';
@@ -13,11 +21,114 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _isVaultSyncEnabled = true;
+  bool _isVaultSyncEnabled = false;
   bool _isDarkModeEnabled = false;
   final _settingsService = SettingsService();
+  final _dbService = DatabaseService();
+
+  Future<void> _exportData() async {
+    try {
+      final transactions = await _dbService.getTransactions();
+      final data = transactions.map((tx) => tx.toMap()).toList();
+      final jsonString = jsonEncode(data);
+
+      final directory = await getTemporaryDirectory();
+      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+      final fileName = 'the_ledger_export_$timestamp.json';
+      final file = File('${directory.path}/$fileName');
+
+      await file.writeAsString(jsonString);
+
+      if (mounted) {
+        final result = await Share.shareXFiles(
+          [XFile(file.path)],
+          subject: 'The Ledger Export',
+          text: 'Here is your financial data from The Ledger.',
+        );
+
+        if (result.status == ShareResultStatus.success && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Export shared successfully!'),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to export data: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _importData() async {
+    final colorScheme = Theme.of(context).colorScheme;
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        final jsonString = await file.readAsString();
+        final List<dynamic> jsonData = jsonDecode(jsonString);
+
+        if (mounted) {
+          final confirm = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Import Data', style: TextStyle(fontFamily: 'Manrope', fontWeight: FontWeight.bold)),
+              content: Text('This will import ${jsonData.length} transactions. Continue?', style: const TextStyle(fontFamily: 'Inter')),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text('Cancel', style: TextStyle(color: colorScheme.outline)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: Text('Import', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          );
+
+          if (confirm == true) {
+            final List<TransactionModel> transactions = jsonData.map((item) => TransactionModel.fromMap(item as Map<String, dynamic>)).toList();
+            await _dbService.insertTransactions(transactions);
+
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Data imported successfully!'),
+                  backgroundColor: colorScheme.primary,
+                ),
+              );
+            }
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to import data: $e'),
+            backgroundColor: colorScheme.error,
+          ),
+        );
+      }
+    }
+  }
 
   Future<void> _showCurrencyPicker() async {
+    final colorScheme = Theme.of(context).colorScheme;
     final Currency? picked = await showDialog<Currency>(
       context: context,
       builder: (context) => AlertDialog(
@@ -33,7 +144,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               return ListTile(
                 leading: Text(currency.symbol, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 title: Text(currency.name, style: const TextStyle(fontFamily: 'Inter')),
-                trailing: isSelected ? const Icon(Icons.check, color: AppColors.primary) : null,
+                trailing: isSelected ? Icon(Icons.check, color: colorScheme.primary) : null,
                 onTap: () => Navigator.pop(context, currency),
               );
             },
@@ -48,6 +159,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _showAccountingStartDayPicker() async {
+    final colorScheme = Theme.of(context).colorScheme;
     final int? picked = await showDialog<int>(
       context: context,
       builder: (context) => AlertDialog(
@@ -69,14 +181,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () => Navigator.pop(context, day),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : AppColors.surfaceContainerLow,
+                    color: isSelected ? colorScheme.primary : colorScheme.surfaceContainerLow,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     day.toString(),
                     style: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.primary,
+                      color: isSelected ? colorScheme.onPrimary : colorScheme.primary,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
@@ -109,35 +221,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background.withOpacity(0.8),
+        backgroundColor: colorScheme.surface.withOpacity(0.8),
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
         title: Row(
           children: [
-            const Icon(Icons.cached, color: AppColors.primary, size: 24),
+            Icon(Icons.cached, color: colorScheme.primary, size: 24),
             const SizedBox(width: 8),
             Text(
               'The Ledger',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: textTheme.titleLarge?.copyWith(
                     fontFamily: 'Manrope',
                     fontWeight: FontWeight.w900,
-                    color: AppColors.primary,
+                    color: colorScheme.primary,
                     letterSpacing: -1.0,
                   ),
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.search, color: AppColors.onSurfaceVariant),
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -154,24 +261,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Editorial Header
-                  const Text(
+                  Text(
                     'PREFERENCES',
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.secondary,
+                      color: colorScheme.secondary,
                       letterSpacing: 1.5,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Settings',
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 40,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.primary,
+                      color: colorScheme.primary,
                       letterSpacing: -1.5,
                     ),
                   ),
@@ -179,9 +286,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   // Account Section
                   const ProfileCard(
-                    name: 'Alexander Sterling',
-                    wealthId: '8829-X',
-                    imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=2574&auto=format&fit=crop',
+                    name: 'Guests',
+                    wealthId: 'GUEST-001',
+                    imageUrl: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=2574&auto=format&fit=crop',
                   ),
                   const SizedBox(height: 40),
 
@@ -193,25 +300,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         icon: Icons.cloud_sync,
                         title: 'Cloud Vault Sync',
                         subtitle: 'Encrypted backup of all ledgers',
-                        iconContainerColor: AppColors.primaryContainer,
-                        iconColor: AppColors.onPrimaryContainer,
+                        iconContainerColor: colorScheme.primaryContainer,
+                        iconColor: colorScheme.onPrimaryContainer,
                         trailing: Switch(
                           value: _isVaultSyncEnabled,
                           onChanged: (value) {
                             setState(() => _isVaultSyncEnabled = value);
                           },
                           activeColor: Colors.white,
-                          activeTrackColor: AppColors.secondary,
+                          activeTrackColor: colorScheme.secondary,
                         ),
                       ),
-                      const Divider(height: 1, indent: 72, endIndent: 20, color: AppColors.outlineVariant),
-                      const SettingsItem(
-                        icon: Icons.alternate_email,
-                        title: 'Connected Account',
-                        subtitle: 'a.sterling.private@gmail.com',
-                        iconContainerColor: AppColors.surfaceContainerHigh,
-                        iconColor: AppColors.primary,
-                      ),
+                      if (_isVaultSyncEnabled) ...[
+                        Divider(height: 1, indent: 72, endIndent: 20, color: colorScheme.outlineVariant),
+                        SettingsItem(
+                          icon: Icons.alternate_email,
+                          title: 'Connected Account',
+                          subtitle: 'guest@gmail.com',
+                          iconContainerColor: colorScheme.surfaceContainerHigh,
+                          iconColor: colorScheme.primary,
+                        ),
+                      ],
                     ],
                   ),
 
@@ -232,16 +341,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               children: [
                                 Text(
                                   'Day ${day.toString().padLeft(2, '0')}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
+                                    color: colorScheme.primary,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const Icon(
+                                Icon(
                                   Icons.chevron_right,
-                                  color: AppColors.outlineVariant,
+                                  color: colorScheme.outlineVariant,
                                   size: 20,
                                 ),
                               ],
@@ -256,16 +365,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   SettingsSection(
                     title: 'Data Management',
                     children: [
-                      const SettingsItem(
+                      SettingsItem(
                         icon: Icons.file_download_outlined,
                         title: 'Export Data',
-                        subtitle: 'Download records as CSV/JSON',
+                        subtitle: 'Download records as JSON',
+                        onTap: _exportData,
                       ),
-                      const Divider(height: 1, indent: 72, endIndent: 20, color: AppColors.outlineVariant),
-                      const SettingsItem(
+                      Divider(height: 1, indent: 72, endIndent: 20, color: colorScheme.outlineVariant),
+                      SettingsItem(
                         icon: Icons.file_upload_outlined,
                         title: 'Import Data',
                         subtitle: 'Restore ledger from a file',
+                        onTap: _importData,
                       ),
                     ],
                   ),
@@ -274,20 +385,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   SettingsSection(
                     title: 'General',
                     children: [
-                      SettingsItem(
-                        icon: Icons.dark_mode,
-                        title: 'Dark Mode',
-                        subtitle: 'Automatic based on system',
-                        trailing: Switch(
-                          value: _isDarkModeEnabled,
-                          onChanged: (value) {
-                            setState(() => _isDarkModeEnabled = value);
-                          },
-                          activeColor: Colors.white,
-                          activeTrackColor: AppColors.outlineVariant,
-                        ),
+                      ValueListenableBuilder<ThemeMode>(
+                        valueListenable: _settingsService.themeMode,
+                        builder: (context, mode, child) {
+                          return SettingsItem(
+                            icon: Icons.dark_mode,
+                            title: 'Dark Mode',
+                            subtitle: mode == ThemeMode.dark ? 'Enabled' : 'Disabled',
+                            trailing: Switch(
+                              value: mode == ThemeMode.dark,
+                              onChanged: (value) {
+                                _settingsService.setThemeMode(
+                                  value ? ThemeMode.dark : ThemeMode.light,
+                                );
+                              },
+                              activeColor: Colors.white,
+                              activeTrackColor: colorScheme.secondary,
+                            ),
+                          );
+                        },
                       ),
-                      const Divider(height: 1, indent: 72, endIndent: 20, color: AppColors.outlineVariant),
+                      Divider(height: 1, indent: 72, endIndent: 20, color: colorScheme.outlineVariant),
                       ValueListenableBuilder<Currency>(
                         valueListenable: _settingsService.reportingCurrency,
                         builder: (context, currency, child) {
@@ -301,16 +419,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               children: [
                                 Text(
                                   '${currency.code} (${currency.symbol})',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
+                                    color: colorScheme.primary,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const Icon(
+                                Icon(
                                   Icons.chevron_right,
-                                  color: AppColors.outlineVariant,
+                                  color: colorScheme.outlineVariant,
                                   size: 20,
                                 ),
                               ],
@@ -326,34 +444,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Center(
                     child: Column(
                       children: [
-                        OutlinedButton(
-                          onPressed: () {},
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.error,
-                            side: BorderSide(
-                              color: AppColors.error.withOpacity(0.1),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 16,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Log Out of All Devices',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
                         const SizedBox(height: 24),
                         Text(
                           'THE LEDGER V${SettingsConstants.appVersion} • BUILD ${SettingsConstants.buildNumber}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 2.0,
-                            color: AppColors.outlineVariant,
+                            color: colorScheme.outlineVariant,
+                            fontFamily: 'Inter',
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'BUILT BY DTS',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2.0,
+                            color: colorScheme.outlineVariant,
                             fontFamily: 'Inter',
                           ),
                         ),

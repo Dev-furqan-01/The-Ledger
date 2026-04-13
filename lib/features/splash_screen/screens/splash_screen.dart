@@ -26,12 +26,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: AppGradients.splashGradient,
+        decoration: BoxDecoration(
+          gradient: AppGradients.getSplashGradient(colorScheme),
         ),
         child: Stack(
           alignment: Alignment.center,
@@ -44,11 +45,11 @@ class _SplashScreenState extends State<SplashScreen> {
                 width: MediaQuery.of(context).size.width * 0.4,
                 height: MediaQuery.of(context).size.width * 0.4,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerLow.withOpacity(0.4),
+                  color: colorScheme.surfaceContainerLow.withOpacity(0.4),
                   shape: BoxShape.circle,
                 ),
                 child: BackdropFilter(
-                  filter: const ColorFilter.mode(Colors.white, BlendMode.dstIn),
+                  filter: ColorFilter.mode(colorScheme.surface, BlendMode.dstIn),
                   child: Container(),
                 ),
               ),
@@ -60,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 width: MediaQuery.of(context).size.width * 0.5,
                 height: MediaQuery.of(context).size.width * 0.5,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.03),
+                  color: colorScheme.primary.withOpacity(0.03),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -73,7 +74,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.outlineVariant.withOpacity(0.05),
+                    color: colorScheme.outlineVariant.withOpacity(0.05),
                     width: 1,
                   ),
                 ),
@@ -86,7 +87,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.outlineVariant.withOpacity(0.03),
+                    color: colorScheme.outlineVariant.withOpacity(0.03),
                     width: 1,
                   ),
                 ),

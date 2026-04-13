@@ -34,6 +34,7 @@ class _CategoryBentoGridState extends State<CategoryBentoGrid> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final List<Map<String, dynamic>> categories = widget.isExpense ? expenseCategories : incomeCategories;
 
     // Reset selected category if it's not in the current list
@@ -46,10 +47,10 @@ class _CategoryBentoGridState extends State<CategoryBentoGrid> {
       children: [
         Text(
           widget.isExpense ? 'CATEGORY' : 'SOURCE',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.bold,
-            color: AppColors.outline,
+            color: colorScheme.outline,
             letterSpacing: 0.5,
           ),
         ),
@@ -76,10 +77,10 @@ class _CategoryBentoGridState extends State<CategoryBentoGrid> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primaryContainer : AppColors.surfaceContainerLow,
+                  color: isSelected ? colorScheme.primaryContainer : colorScheme.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isSelected ? AppColors.primary : Colors.transparent,
+                    color: isSelected ? colorScheme.primary : Colors.transparent,
                     width: 1,
                   ),
                 ),
@@ -88,7 +89,7 @@ class _CategoryBentoGridState extends State<CategoryBentoGrid> {
                   children: [
                     Icon(
                       category['icon'],
-                      color: isSelected ? Colors.white : AppColors.outline,
+                      color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.outline,
                       size: 24,
                     ),
                     const SizedBox(height: 8),
@@ -97,7 +98,7 @@ class _CategoryBentoGridState extends State<CategoryBentoGrid> {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: isSelected ? Colors.white : AppColors.onSurfaceVariant,
+                        color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurfaceVariant,
                         letterSpacing: 0.5,
                       ),
                     ),

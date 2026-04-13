@@ -163,6 +163,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> _selectDateRange() async {
+    final colorScheme = Theme.of(context).colorScheme;
     final DateTimeRange? picked = await showDateRangePicker(
       context: context,
       initialDateRange: _selectedDateRange ??
@@ -175,11 +176,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primary,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: AppColors.primary,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: colorScheme.primary,
+              primary: colorScheme.primary,
+              onPrimary: colorScheme.onPrimary,
+              surface: colorScheme.surface,
+              onSurface: colorScheme.onSurface,
             ),
           ),
           child: child!,
@@ -195,14 +197,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   void _showActionSheet(BuildContext context, TransactionModel transaction) {
+    final colorScheme = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -211,13 +214,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.outlineVariant,
+                color: colorScheme.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 24),
             ListTile(
-              leading: const Icon(Icons.edit, color: AppColors.primary),
+              leading: Icon(Icons.edit, color: colorScheme.primary),
               title: const Text('Edit Transaction', style: TextStyle(fontWeight: FontWeight.w600)),
               onTap: () async {
                 Navigator.pop(context);
@@ -233,8 +236,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete, color: AppColors.error),
-              title: const Text('Delete Transaction', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.error)),
+              leading: Icon(Icons.delete, color: colorScheme.error),
+              title: Text('Delete Transaction', style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.error)),
               onTap: () async {
                 Navigator.pop(context);
                 final confirmed = await showDialog<bool>(
@@ -246,7 +249,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Delete', style: TextStyle(color: AppColors.error)),
+                        child: Text('Delete', style: TextStyle(color: colorScheme.error)),
                       ),
                     ],
                   ),
@@ -277,10 +280,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -289,9 +295,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final totalTransactions = filtered.length;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white.withOpacity(0.8),
+        backgroundColor: colorScheme.surface.withOpacity(0.8),
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
@@ -305,21 +311,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
             const SizedBox(width: 8),
             Text(
               'The Ledger',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: textTheme.titleLarge?.copyWith(
                     fontFamily: 'Manrope',
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: colorScheme.primary,
                   ),
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.search, color: AppColors.onSurfaceVariant),
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
       body: SingleChildScrollView(
         controller: _scrollController,
@@ -337,23 +336,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'History',
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 48,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.primary,
+                            color: colorScheme.primary,
                             letterSpacing: -1.5,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'A comprehensive archive of your fiscal movements. Audit your credits and debits with surgical precision.',
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 14,
-                            color: AppColors.onSurfaceVariant,
+                            color: colorScheme.onSurfaceVariant,
                             height: 1.5,
                           ),
                         ),
@@ -367,18 +366,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
               // Search Bar
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerLow,
+                  color: colorScheme.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: TextField(
                   controller: _searchController,
                   onChanged: (value) => setState(() {}),
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search, color: AppColors.outline),
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.search, color: colorScheme.outline),
                     hintText: 'Search transactions...',
-                    hintStyle: TextStyle(color: AppColors.outline, fontSize: 14),
+                    hintStyle: TextStyle(color: colorScheme.outline, fontSize: 14),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 16),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                 ),
               ),
@@ -407,17 +406,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           final end = DateTime(start.year, start.month + 1, start.day);
                           setState(() => _selectedDateRange = DateTimeRange(start: start, end: end));
                         },
-                        icon: const Icon(Icons.refresh, size: 18, color: AppColors.primary),
+                        icon: Icon(Icons.refresh, size: 18, color: colorScheme.primary),
                         style: IconButton.styleFrom(
-                          backgroundColor: AppColors.primary.withOpacity(0.1),
+                          backgroundColor: colorScheme.primary.withOpacity(0.1),
                         ),
                       ),
                       const SizedBox(width: 8),
                       IconButton(
                         onPressed: () => setState(() => _selectedDateRange = null),
-                        icon: const Icon(Icons.close, size: 18, color: AppColors.error),
+                        icon: Icon(Icons.close, size: 18, color: colorScheme.error),
                         style: IconButton.styleFrom(
-                          backgroundColor: AppColors.error.withOpacity(0.1),
+                          backgroundColor: colorScheme.error.withOpacity(0.1),
                         ),
                       ),
                     ],
@@ -434,10 +433,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     const SizedBox(width: 12),
                     Text(
                       'SHOWING $totalTransactions TRANSACTIONS',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.outline,
+                        color: colorScheme.outline,
                         letterSpacing: 1.0,
                       ),
                     ),
@@ -453,11 +452,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 64),
                     child: Column(
                       children: [
-                        Icon(Icons.history_toggle_off, size: 48, color: AppColors.outline.withOpacity(0.5)),
+                        Icon(Icons.history_toggle_off, size: 48, color: colorScheme.outline.withOpacity(0.5)),
                         const SizedBox(height: 16),
                         Text(
                           'No transactions found for this period.',
-                          style: TextStyle(color: AppColors.outline, fontFamily: 'Inter'),
+                          style: TextStyle(color: colorScheme.outline, fontFamily: 'Inter'),
                         ),
                       ],
                     ),
@@ -484,23 +483,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   child: Center(
                     child: Column(
                       children: [
-                        const SizedBox(
+                        SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: AppColors.primary,
+                            color: colorScheme.primary,
                           ),
                         ),
                         const SizedBox(height: 16),
-                        const Opacity(
+                        Opacity(
                           opacity: 0.4,
                           child: Text(
                             'RETRIEVING OLDER RECORDS',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.primary,
+                              color: colorScheme.primary,
                               letterSpacing: 2.0,
                             ),
                           ),
@@ -533,12 +532,13 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primary : AppColors.surfaceContainerHigh,
+          color: isActive ? colorScheme.primary : colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(99),
         ),
         child: Row(
@@ -547,7 +547,7 @@ class _FilterChip extends StatelessWidget {
             Icon(
               icon,
               size: 14,
-              color: isActive ? Colors.white : AppColors.onSurfaceVariant,
+              color: isActive ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: 8),
             Text(
@@ -555,7 +555,7 @@ class _FilterChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: isActive ? Colors.white : AppColors.onSurfaceVariant,
+                color: isActive ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
                 letterSpacing: 0.5,
               ),
             ),
@@ -572,22 +572,23 @@ class _DateGroupHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: AppColors.outlineVariant.withOpacity(0.1),
+            color: colorScheme.outlineVariant.withOpacity(0.1),
             width: 1,
           ),
         ),
       ),
       child: Text(
         label.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.bold,
-          color: AppColors.outline,
+          color: colorScheme.outline,
           letterSpacing: 2.0,
         ),
       ),

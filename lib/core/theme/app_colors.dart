@@ -34,6 +34,39 @@ class AppColors {
   static const Color surfaceContainerHigh = Color(0xFFE7E8E9);
   static const Color surfaceContainerHighest = Color(0xFFE1E3E4);
 
+  // Dark Mode Colors
+  static const Color primaryDark = Color(0xFF83BAD6);
+  static const Color onPrimaryDark = Color(0xFF003544);
+  static const Color primaryContainerDark = Color(0xFF004D62);
+  static const Color onPrimaryContainerDark = Color(0xFFBFE8FF);
+
+  static const Color secondaryDark = Color(0xFF81D5C2);
+  static const Color onSecondaryDark = Color(0xFF003730);
+  static const Color secondaryContainerDark = Color(0xFF005047);
+  static const Color onSecondaryContainerDark = Color(0xFF9DEFDE);
+
+  static const Color tertiaryDark = Color(0xFF8ED289);
+  static const Color onTertiaryDark = Color(0xFF00390A);
+  static const Color tertiaryContainerDark = Color(0xFF005312);
+  static const Color onTertiaryContainerDark = Color(0xFFA9EEA3);
+
+  static const Color backgroundDark = Color(0xFF191C1D);
+  static const Color onBackgroundDark = Color(0xFFE1E3E4);
+
+  static const Color surfaceDark = Color(0xFF191C1D);
+  static const Color onSurfaceDark = Color(0xFFE1E3E4);
+  static const Color surfaceVariantDark = Color(0xFF40484C);
+  static const Color onSurfaceVariantDark = Color(0xFFC0C7CD);
+
+  static const Color outlineDark = Color(0xFF8A9297);
+  static const Color outlineVariantDark = Color(0xFF40484C);
+
+  static const Color surfaceContainerLowestDark = Color(0xFF0C0F10);
+  static const Color surfaceContainerLowDark = Color(0xFF191C1D);
+  static const Color surfaceContainerDark_ = Color(0xFF1D2021); // surfaceContainer
+  static const Color surfaceContainerHighDark = Color(0xFF282A2B);
+  static const Color surfaceContainerHighestDark = Color(0xFF333536);
+
   static const Color outline = Color(0xFF71787D);
   static const Color outlineVariant = Color(0xFFC0C7CD);
 

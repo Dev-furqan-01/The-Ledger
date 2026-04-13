@@ -19,19 +19,20 @@ class HistoryTransactionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settingsService = SettingsService();
+    final colorScheme = Theme.of(context).colorScheme;
     final bool isNegative = transaction.type == TransactionType.debit;
-    final Color accentColor = isNegative ? AppColors.error : AppColors.secondary;
+    final Color accentColor = isNegative ? colorScheme.error : colorScheme.secondary;
     final String amount = transaction.amount.toStringAsFixed(2);
     final String time = DateFormat('HH:mm a').format(transaction.date);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF191C1D).withOpacity(0.04),
+            color: colorScheme.onSurface.withOpacity(0.04),
             blurRadius: 24,
             offset: const Offset(0, 4),
           ),
@@ -60,10 +61,10 @@ class HistoryTransactionItem extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerHigh,
+                    color: colorScheme.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(transaction.icon, color: AppColors.primary, size: 24),
+                  child: Icon(transaction.icon, color: colorScheme.primary, size: 24),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -72,10 +73,10 @@ class HistoryTransactionItem extends StatelessWidget {
                     children: [
                       Text(
                         transaction.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Manrope',
                           fontWeight: FontWeight.w700,
-                          color: AppColors.primary,
+                          color: colorScheme.primary,
                           fontSize: 16,
                           letterSpacing: -0.2,
                         ),
@@ -85,11 +86,11 @@ class HistoryTransactionItem extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         transaction.category.toUpperCase(),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 9,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.onSurfaceVariant,
+                          color: colorScheme.onSurfaceVariant,
                           letterSpacing: 1.5,
                         ),
                       ),
@@ -118,10 +119,10 @@ class HistoryTransactionItem extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       time,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 10,
-                        color: AppColors.outline,
+                        color: colorScheme.outline,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

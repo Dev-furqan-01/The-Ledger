@@ -14,10 +14,11 @@ class _TransactionTypeToggleState extends State<TransactionTypeToggle> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -26,7 +27,7 @@ class _TransactionTypeToggleState extends State<TransactionTypeToggle> {
             child: _ToggleItem(
               label: 'Expense / Debit',
               isSelected: isExpense,
-              activeColor: AppColors.error,
+              activeColor: colorScheme.error,
               onTap: () {
                 setState(() => isExpense = true);
                 widget.onToggle(true);
@@ -37,7 +38,7 @@ class _TransactionTypeToggleState extends State<TransactionTypeToggle> {
             child: _ToggleItem(
               label: 'Income / Credit',
               isSelected: !isExpense,
-              activeColor: AppColors.onSecondaryContainer,
+              activeColor: colorScheme.onSecondaryContainer,
               onTap: () {
                 setState(() => isExpense = false);
                 widget.onToggle(false);
@@ -65,13 +66,14 @@ class _ToggleItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.surfaceContainerLowest : Colors.transparent,
+          color: isSelected ? colorScheme.surfaceContainerLowest : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           boxShadow: isSelected
               ? [
@@ -90,7 +92,7 @@ class _ToggleItem extends StatelessWidget {
               fontSize: 13,
               fontWeight: FontWeight.bold,
               fontFamily: 'Manrope',
-              color: isSelected ? activeColor : AppColors.onSurfaceVariant,
+              color: isSelected ? activeColor : colorScheme.onSurfaceVariant,
             ),
           ),
         ),

@@ -40,8 +40,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: colorScheme.surface,
       body: IndexedStack(
         index: _selectedIndex,
         children: _screens,
@@ -56,7 +57,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           right: 16,
         ),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.8),
+          color: colorScheme.surface.withOpacity(0.8),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
@@ -100,7 +101,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _homeKey.currentState?.refresh();
                 }
               },
-              backgroundColor: AppColors.primary,
+              backgroundColor: colorScheme.primary,
               shape: const CircleBorder(),
               elevation: 8,
               child: const Icon(Icons.add, color: Colors.white, size: 32),
@@ -158,14 +159,15 @@ class _HomeViewState extends State<_HomeView> {
   }
 
   void _showActionSheet(BuildContext context, TransactionModel transaction) {
+    final colorScheme = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -174,13 +176,13 @@ class _HomeViewState extends State<_HomeView> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.outlineVariant,
+                color: colorScheme.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 24),
             ListTile(
-              leading: const Icon(Icons.edit, color: AppColors.primary),
+              leading: Icon(Icons.edit, color: colorScheme.primary),
               title: const Text('Edit Transaction', style: TextStyle(fontWeight: FontWeight.w600)),
               onTap: () async {
                 Navigator.pop(context);
@@ -196,8 +198,8 @@ class _HomeViewState extends State<_HomeView> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete, color: AppColors.error),
-              title: const Text('Delete Transaction', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.error)),
+              leading: Icon(Icons.delete, color: colorScheme.error),
+              title: Text('Delete Transaction', style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.error)),
               onTap: () async {
                 Navigator.pop(context);
                 final confirmed = await showDialog<bool>(
@@ -209,7 +211,7 @@ class _HomeViewState extends State<_HomeView> {
                       TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Delete', style: TextStyle(color: AppColors.error)),
+                        child: Text('Delete', style: TextStyle(color: colorScheme.error)),
                       ),
                     ],
                   ),
@@ -228,10 +230,12 @@ class _HomeViewState extends State<_HomeView> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white.withOpacity(0.8),
+        backgroundColor: colorScheme.surface.withOpacity(0.8),
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
@@ -243,24 +247,17 @@ class _HomeViewState extends State<_HomeView> {
               height: 32,
             ),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'The Ledger',
               style: TextStyle(
                 fontFamily: 'Manrope',
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: colorScheme.primary,
                 fontSize: 22,
               ),
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.search, color: AppColors.onSurfaceVariant),
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
       body: FutureBuilder<List<TransactionModel>>(
         future: _transactionsFuture,
@@ -292,14 +289,14 @@ class _HomeViewState extends State<_HomeView> {
                           Container(
                             width: 8,
                             height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.secondary,
+                            decoration: BoxDecoration(
+                              color: colorScheme.secondary,
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Color(0x66046B5E),
+                                  color: colorScheme.secondary.withOpacity(0.4),
                                   blurRadius: 8,
-                                  offset: Offset(0, 0),
+                                  offset: const Offset(0, 0),
                                 ),
                               ],
                             ),
@@ -307,10 +304,10 @@ class _HomeViewState extends State<_HomeView> {
                           const SizedBox(width: 8),
                           Text(
                             'CURRENT CYCLE',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            style: textTheme.labelSmall?.copyWith(
                                   letterSpacing: 1.1,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.onSurfaceVariant,
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
                           ),
                         ],
@@ -318,10 +315,10 @@ class _HomeViewState extends State<_HomeView> {
                       const SizedBox(height: 4),
                       Text(
                         _getCycleDateRangeText(),
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        style: textTheme.headlineSmall?.copyWith(
                               fontFamily: 'Manrope',
                               fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
+                              color: colorScheme.primary,
                             ),
                       ),
                       const SizedBox(height: 32),
@@ -334,10 +331,10 @@ class _HomeViewState extends State<_HomeView> {
                         children: [
                           Text(
                             'Recent Transactions',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            style: textTheme.titleLarge?.copyWith(
                                   fontFamily: 'Manrope',
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
+                                  color: colorScheme.primary,
                                   fontSize: 20,
                                 ),
                           ),
@@ -346,7 +343,7 @@ class _HomeViewState extends State<_HomeView> {
                             child: Text(
                               'See All',
                               style: TextStyle(
-                                color: AppColors.primary.withOpacity(0.6),
+                                color: colorScheme.primary.withOpacity(0.6),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -355,12 +352,12 @@ class _HomeViewState extends State<_HomeView> {
                       ),
                       const SizedBox(height: 16),
                       if (cycleTransactions.isEmpty)
-                        const Center(
+                        Center(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 40),
+                            padding: const EdgeInsets.symmetric(vertical: 40),
                             child: Text(
                               'No transactions in this cycle',
-                              style: TextStyle(color: AppColors.outline),
+                              style: TextStyle(color: colorScheme.outline),
                             ),
                           ),
                         )
@@ -398,12 +395,13 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.secondaryContainer.withOpacity(0.5) : Colors.transparent,
+          color: isActive ? colorScheme.secondaryContainer.withOpacity(0.5) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -411,7 +409,7 @@ class _NavItem extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isActive ? AppColors.onSecondaryContainer : AppColors.outline,
+              color: isActive ? colorScheme.onSecondaryContainer : colorScheme.outline,
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -420,7 +418,7 @@ class _NavItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: isActive ? AppColors.onSecondaryContainer : AppColors.outline,
+                color: isActive ? colorScheme.onSecondaryContainer : colorScheme.outline,
                 letterSpacing: 0.5,
               ),
             ),

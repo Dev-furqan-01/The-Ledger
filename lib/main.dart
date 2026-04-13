@@ -14,11 +14,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'The Ledger',
-      theme: AppTheme.lightTheme,
-      home: const SplashScreen(),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: SettingsService().themeMode,
+      builder: (context, mode, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'The Ledger',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: mode,
+          home: const SplashScreen(),
+        );
+      },
     );
   }
 }

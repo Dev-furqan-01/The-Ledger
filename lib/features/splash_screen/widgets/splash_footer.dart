@@ -39,6 +39,7 @@ class _SplashFooterState extends State<SplashFooter>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -54,8 +55,8 @@ class _SplashFooterState extends State<SplashFooter>
                   child: Container(
                     width: 16 * _pulseAnimation.value,
                     height: 16 * _pulseAnimation.value,
-                    decoration: const BoxDecoration(
-                      color: AppColors.secondary,
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondary,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -66,8 +67,8 @@ class _SplashFooterState extends State<SplashFooter>
             Container(
               width: 6,
               height: 6,
-              decoration: const BoxDecoration(
-                color: AppColors.secondary,
+              decoration: BoxDecoration(
+                color: colorScheme.secondary,
                 shape: BoxShape.circle,
               ),
             ),
@@ -77,7 +78,7 @@ class _SplashFooterState extends State<SplashFooter>
         Text(
           widget.content.statusText,
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            color: AppColors.onSurfaceVariant.withOpacity(0.5),
+            color: colorScheme.onSurfaceVariant.withOpacity(0.5),
             letterSpacing: 2.5,
           ),
         ),

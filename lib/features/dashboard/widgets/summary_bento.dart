@@ -12,6 +12,7 @@ class SummaryBento extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settingsService = SettingsService();
+    final colorScheme = Theme.of(context).colorScheme;
     double totalCredit = 0;
     double totalDebit = 0;
 
@@ -36,8 +37,8 @@ class SummaryBento extends StatelessWidget {
                 amount: '${currency.symbol}${currencyFormat.format(totalCredit)}',
                 percentage: '+${_calculatePercentage(totalCredit, totalDebit)}%',
                 icon: Icons.trending_up,
-                iconColor: AppColors.onTertiaryContainer,
-                containerColor: AppColors.tertiaryContainer.withOpacity(0.05),
+                iconColor: colorScheme.onTertiaryContainer,
+                containerColor: colorScheme.tertiaryContainer.withOpacity(0.05),
               ),
             ),
             const SizedBox(width: 16),
@@ -47,8 +48,8 @@ class SummaryBento extends StatelessWidget {
                 amount: '${currency.symbol}${currencyFormat.format(totalDebit)}',
                 percentage: '-${_calculatePercentage(totalDebit, totalCredit)}%',
                 icon: Icons.trending_down,
-                iconColor: AppColors.error,
-                containerColor: AppColors.errorContainer.withOpacity(0.2),
+                iconColor: colorScheme.error,
+                containerColor: colorScheme.errorContainer.withOpacity(0.2),
               ),
             ),
           ],
@@ -82,10 +83,11 @@ class _BentoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -122,7 +124,7 @@ class _BentoCard extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppColors.onSurfaceVariant,
+                  color: colorScheme.onSurfaceVariant,
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5,
