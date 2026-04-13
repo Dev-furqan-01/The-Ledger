@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/settings_service.dart';
 import '../models/transaction_model.dart';
 import 'package:intl/intl.dart';
 
@@ -10,6 +11,7 @@ class BalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settingsService = SettingsService();
     double totalCredit = 0;
     double totalDebit = 0;
 
@@ -67,27 +69,32 @@ class BalanceCard extends StatelessWidget {
                     ),
               ),
               const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text(
-                    'RS',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Colors.white.withOpacity(0.6),
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    currencyFormat.format(balance),
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          color: Colors.white,
-                          fontSize: 42,
-                          fontWeight: FontWeight.w800,
-                        ),
-                  ),
-                ],
+              ValueListenableBuilder(
+                valueListenable: settingsService.reportingCurrency,
+                builder: (context, currency, child) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        currency.symbol,
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              color: Colors.white.withOpacity(0.6),
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        currencyFormat.format(balance),
+                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                              color: Colors.white,
+                              fontSize: 42,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 32),
               Row(

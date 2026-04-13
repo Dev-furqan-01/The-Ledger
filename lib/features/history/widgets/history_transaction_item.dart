@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/settings_service.dart';
 import '../../dashboard/models/transaction_model.dart';
 import 'package:intl/intl.dart';
 
@@ -17,6 +18,7 @@ class HistoryTransactionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settingsService = SettingsService();
     final bool isNegative = transaction.type == TransactionType.debit;
     final Color accentColor = isNegative ? AppColors.error : AppColors.secondary;
     final String amount = transaction.amount.toStringAsFixed(2);
@@ -98,15 +100,20 @@ class HistoryTransactionItem extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      '${isNegative ? '-' : '+'} \$$amount',
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontWeight: FontWeight.w800,
-                        color: accentColor,
-                        fontSize: 16,
-                        letterSpacing: -0.5,
-                      ),
+                    ValueListenableBuilder(
+                      valueListenable: settingsService.reportingCurrency,
+                      builder: (context, currency, child) {
+                        return Text(
+                          '${isNegative ? '-' : '+'} ${currency.symbol}$amount',
+                          style: TextStyle(
+                            fontFamily: 'Manrope',
+                            fontWeight: FontWeight.w800,
+                            color: accentColor,
+                            fontSize: 16,
+                            letterSpacing: -0.5,
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 2),
                     Text(

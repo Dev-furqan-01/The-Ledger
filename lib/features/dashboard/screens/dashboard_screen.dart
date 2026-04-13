@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/settings_service.dart';
 import '../models/transaction_model.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/summary_bento.dart';
@@ -19,6 +21,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
   final GlobalKey<_HomeViewState> _homeKey = GlobalKey<_HomeViewState>();
+  final _settingsService = SettingsService();
 
   late final List<Widget> _screens;
 
@@ -31,7 +34,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onSeeAll: () => setState(() => _selectedIndex = 1),
       ),
       const HistoryScreen(),
-      const Scaffold(body: Center(child: Text('Growth Screen'))),
       const SettingsScreen(),
     ];
   }
@@ -45,7 +47,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: _screens,
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.only(top: 12, bottom: 24, left: 16, right: 16),
+        padding: EdgeInsets.only(
+          top: 12,
+          bottom: MediaQuery.of(context).padding.bottom > 0 
+              ? MediaQuery.of(context).padding.bottom 
+              : 12, // Minimal padding for devices without system nav bar
+          left: 16,
+          right: 16,
+        ),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.8),
           boxShadow: [
@@ -72,16 +81,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onTap: () => setState(() => _selectedIndex = 1),
             ),
             _NavItem(
-              icon: Icons.sync_alt,
-              label: 'CYCLES',
-              isActive: _selectedIndex == 2,
-              onTap: () => setState(() => _selectedIndex = 2),
-            ),
-            _NavItem(
               icon: Icons.settings,
               label: 'SETTINGS',
-              isActive: _selectedIndex == 3,
-              onTap: () => setState(() => _selectedIndex = 3),
+              isActive: _selectedIndex == 2,
+              onTap: () => setState(() => _selectedIndex = 2),
             ),
           ],
         ),
@@ -117,6 +120,7 @@ class _HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<_HomeView> {
   final DatabaseService _dbService = DatabaseService();
+  final _settingsService = SettingsService();
   late Future<List<TransactionModel>> _transactionsFuture;
 
   @override
@@ -129,6 +133,28 @@ class _HomeViewState extends State<_HomeView> {
     setState(() {
       _transactionsFuture = _dbService.getTransactions();
     });
+  }
+
+  List<TransactionModel> _filterTransactionsForCurrentCycle(List<TransactionModel> transactions) {
+    final cycleStart = _settingsService.getCurrentCycleStartDate();
+    final nextCycleStart = DateTime(cycleStart.year, cycleStart.month + 1, cycleStart.day);
+    return transactions.where((tx) {
+      final date = tx.date;
+      return (date.isAfter(cycleStart) || date.isAtSameMomentAs(cycleStart)) && 
+             date.isBefore(nextCycleStart);
+    }).toList();
+  }
+
+  String _getCycleDateRangeText() {
+    final start = _settingsService.getCurrentCycleStartDate();
+    // End date is exactly one month minus one day after start, 
+    // but users often prefer seeing "11 Apr - 11 May" if they meant a full month.
+    // The user said "show 11 apr to 11 may etc...". 
+    // This usually implies the cycle ends the day before the next cycle starts.
+    // But to match "11 apr to 11 may", we'll just add exactly one month.
+    final end = DateTime(start.year, start.month + 1, start.day);
+    final format = DateFormat('MMM d');
+    return '${format.format(start)} - ${format.format(end)}';
   }
 
   void _showActionSheet(BuildContext context, TransactionModel transaction) {
@@ -213,24 +239,25 @@ class _HomeViewState extends State<_HomeView> {
           children: [
             Image.asset(
               'assets/images/hand icon.png',
-              height: 24,
-              width: 24,
+              width: 32,
+              height: 32,
             ),
             const SizedBox(width: 8),
-            Text(
+            const Text(
               'The Ledger',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontFamily: 'Manrope',
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+                fontSize: 22,
+              ),
             ),
           ],
         ),
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.account_balance_wallet_outlined, color: AppColors.primary),
+            icon: const Icon(Icons.search, color: AppColors.onSurfaceVariant),
           ),
           const SizedBox(width: 8),
         ],
@@ -242,102 +269,113 @@ class _HomeViewState extends State<_HomeView> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final transactions = snapshot.data ?? [];
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
 
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Date Cycle Header
-                  Row(
+          final allTransactions = snapshot.data ?? [];
+
+          return ValueListenableBuilder<int>(
+            valueListenable: _settingsService.accountingStartDay,
+            builder: (context, day, child) {
+              final cycleTransactions = _filterTransactionsForCurrentCycle(allTransactions);
+              
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.secondary,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0x66046B5E),
-                              blurRadius: 8,
-                              offset: Offset(0, 0),
+                      // Date Cycle Header
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: AppColors.secondary,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(0x66046B5E),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 0),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'CURRENT CYCLE',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  letterSpacing: 1.1,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.onSurfaceVariant,
+                                ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(height: 4),
                       Text(
-                        'CURRENT CYCLE',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              letterSpacing: 1.1,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.onSurfaceVariant,
-                            ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Oct 10 - Nov 9',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontFamily: 'Manrope',
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                  ),
-                  const SizedBox(height: 32),
-                  BalanceCard(transactions: transactions),
-                  const SizedBox(height: 24),
-                  SummaryBento(transactions: transactions),
-                  const SizedBox(height: 40),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Recent Transactions',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        _getCycleDateRangeText(),
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               fontFamily: 'Manrope',
                               fontWeight: FontWeight.bold,
                               color: AppColors.primary,
-                              fontSize: 20,
                             ),
                       ),
-                      TextButton(
-                        onPressed: widget.onSeeAll,
-                        child: Text(
-                          'See All',
-                          style: TextStyle(
-                            color: AppColors.primary.withOpacity(0.6),
-                            fontWeight: FontWeight.w600,
+                      const SizedBox(height: 32),
+                      BalanceCard(transactions: cycleTransactions),
+                      const SizedBox(height: 24),
+                      SummaryBento(transactions: cycleTransactions),
+                      const SizedBox(height: 40),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Recent Transactions',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontFamily: 'Manrope',
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                  fontSize: 20,
+                                ),
                           ),
-                        ),
+                          TextButton(
+                            onPressed: widget.onSeeAll,
+                            child: Text(
+                              'See All',
+                              style: TextStyle(
+                                color: AppColors.primary.withOpacity(0.6),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+                      const SizedBox(height: 16),
+                      if (cycleTransactions.isEmpty)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 40),
+                            child: Text(
+                              'No transactions in this cycle',
+                              style: TextStyle(color: AppColors.outline),
+                            ),
+                          ),
+                        )
+                      else
+                        ...cycleTransactions.map((tx) => TransactionItem(
+                          transaction: tx,
+                          onTap: () => _showActionSheet(context, tx),
+                          onLongPress: () => _showActionSheet(context, tx),
+                        )).toList(),
+                      SizedBox(height: 80 + MediaQuery.of(context).padding.bottom), // Adaptive spacing for Bottom Nav
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  if (transactions.isEmpty)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 40),
-                        child: Text(
-                          'No transactions yet',
-                          style: TextStyle(color: AppColors.outline),
-                        ),
-                      ),
-                    )
-                  else
-                    ...transactions.map((tx) => TransactionItem(
-                      transaction: tx,
-                      onTap: () => _showActionSheet(context, tx),
-                      onLongPress: () => _showActionSheet(context, tx),
-                    )).toList(),
-                  const SizedBox(height: 100), // Spacing for Bottom Nav
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),

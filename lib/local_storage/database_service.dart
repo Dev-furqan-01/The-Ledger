@@ -43,12 +43,26 @@ class DatabaseService {
     return await db.insert('transactions', transaction.toMap());
   }
 
-  Future<List<TransactionModel>> getTransactions() async {
+  Future<List<TransactionModel>> getTransactions({int? limit, int? offset}) async {
     Database db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('transactions', orderBy: 'date DESC');
+    final List<Map<String, dynamic>> maps = await db.query(
+      'transactions',
+      orderBy: 'date DESC',
+      limit: limit,
+      offset: offset,
+    );
     return List.generate(maps.length, (i) {
       return TransactionModel.fromMap(maps[i]);
     });
+  }
+
+  Future<void> insertTransactions(List<TransactionModel> transactions) async {
+    Database db = await database;
+    Batch batch = db.batch();
+    for (var tx in transactions) {
+      batch.insert('transactions', tx.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    }
+    await batch.commit(noResult: true);
   }
 
   Future<int> deleteTransaction(int id) async {

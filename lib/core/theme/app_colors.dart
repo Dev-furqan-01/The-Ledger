@@ -6,6 +6,11 @@ class AppColors {
   static const Color primaryContainer = Color(0xFF004B63);
   static const Color onPrimaryContainer = Color(0xFF83BAD6);
 
+  static const Color primaryFixed = Color(0xFFBFE8FF);
+  static const Color primaryFixedDim = Color(0xFF96CEEB);
+  static const Color onPrimaryFixed = Color(0xFF001F2B);
+  static const Color onPrimaryFixedVariant = Color(0xFF044D65);
+
   static const Color secondary = Color(0xFF046B5E);
   static const Color onSecondary = Color(0xFFFFFFFF);
   static const Color secondaryContainer = Color(0xFF9DEFDE);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/settings_service.dart';
 import '../../dashboard/models/transaction_model.dart';
 import '../widgets/history_transaction_item.dart';
 import '../../add_transaction/screens/add_transaction_screen.dart';
@@ -17,21 +18,102 @@ class _HistoryScreenState extends State<HistoryScreen> {
   DateTimeRange? _selectedDateRange;
   final TextEditingController _searchController = TextEditingController();
   final DatabaseService _dbService = DatabaseService();
+  final _settingsService = SettingsService();
+  final ScrollController _scrollController = ScrollController();
   List<TransactionModel> _allTransactions = [];
-  bool _isLoading = true;
+  bool _isLoading = true; // For initial local read
+  bool _isFetching = false; // For API sync
+  bool _hasMoreData = true; // To prevent redundant API calls
+  int _currentOffset = 0;
+  final int _pageSize = 20;
 
   @override
   void initState() {
     super.initState();
-    _loadTransactions();
+    // Default to current cycle if no custom range is picked
+    final start = _settingsService.getCurrentCycleStartDate();
+    final end = DateTime(start.year, start.month + 1, start.day);
+    _selectedDateRange = DateTimeRange(start: start, end: end);
+    _loadInitialData();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (!_isFetching && _hasMoreData) {
+        _fetchOlderRecords();
+      }
+    }
+  }
+
+  Future<void> _loadInitialData() async {
+    // Phase 1: Read instantly from local storage
+    setState(() => _isLoading = true);
+    final localTransactions = await _dbService.getTransactions(limit: _pageSize, offset: 0);
+    setState(() {
+      _allTransactions = localTransactions;
+      _currentOffset = localTransactions.length;
+      _isLoading = false;
+    });
+
+    // Phase 2: Optionally trigger API sync if local is empty or for freshness
+    if (localTransactions.isEmpty) {
+      _fetchOlderRecords();
+    }
+  }
+
+  Future<void> _fetchOlderRecords() async {
+    if (_isFetching || !_hasMoreData) return;
+
+    setState(() => _isFetching = true);
+
+    try {
+      // MOCK API CALL - Replace with actual API service later
+      await Future.delayed(const Duration(seconds: 2));
+      
+      // Simulate fetching 10 more records from an "API"
+      final List<TransactionModel> newRecords = [];
+      // If we were using a real API, we would fetch here and then save to DB
+      // await _dbService.insertTransactions(newRecords);
+      
+      // For now, let's assume we reached the end if no real API is connected
+      // or if the mock returns empty.
+      if (newRecords.isEmpty) {
+        setState(() {
+          _hasMoreData = false;
+          _isFetching = false;
+        });
+        return;
+      }
+
+      setState(() {
+        _allTransactions.addAll(newRecords);
+        _currentOffset += newRecords.length;
+        _isFetching = false;
+      });
+    } catch (e) {
+      setState(() => _isFetching = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to sync older records: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _loadTransactions() async {
-    setState(() => _isLoading = true);
+    // Refresh full list from DB
     final transactions = await _dbService.getTransactions();
     setState(() {
       _allTransactions = transactions;
-      _isLoading = false;
+      _currentOffset = transactions.length;
     });
   }
 
@@ -181,6 +263,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
+  bool _isCurrentCycle() {
+    if (_selectedDateRange == null) return false;
+    final start = _settingsService.getCurrentCycleStartDate();
+    final end = DateTime(start.year, start.month + 1, start.day);
+    return _selectedDateRange!.start.year == start.year &&
+           _selectedDateRange!.start.month == start.month &&
+           _selectedDateRange!.start.day == start.day &&
+           _selectedDateRange!.end.year == end.year &&
+           _selectedDateRange!.end.month == end.month &&
+           _selectedDateRange!.end.day == end.day;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -228,6 +322,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ],
       ),
       body: SingleChildScrollView(
+        controller: _scrollController,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           child: Column(
@@ -296,13 +391,27 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   children: [
                     _FilterChip(
                       label: _selectedDateRange == null
-                          ? 'Last 30 Days'
-                          : '${DateFormat('MMM d').format(_selectedDateRange!.start)} - ${DateFormat('MMM d').format(_selectedDateRange!.end)}',
+                          ? 'All Time'
+                          : _isCurrentCycle() 
+                            ? 'Current Cycle' 
+                            : '${DateFormat('MMM d').format(_selectedDateRange!.start)} - ${DateFormat('MMM d').format(_selectedDateRange!.end)}',
                       icon: Icons.calendar_today,
                       isActive: _selectedDateRange != null,
                       onTap: _selectDateRange,
                     ),
                     if (_selectedDateRange != null) ...[
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: () {
+                          final start = _settingsService.getCurrentCycleStartDate();
+                          final end = DateTime(start.year, start.month + 1, start.day);
+                          setState(() => _selectedDateRange = DateTimeRange(start: start, end: end));
+                        },
+                        icon: const Icon(Icons.refresh, size: 18, color: AppColors.primary),
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppColors.primary.withOpacity(0.1),
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       IconButton(
                         onPressed: () => setState(() => _selectedDateRange = null),
@@ -369,35 +478,38 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 }),
 
               // Loader Indicator
-              const SizedBox(height: 48),
-              Center(
-                child: Column(
-                  children: [
-                    const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Opacity(
-                      opacity: 0.4,
-                      child: Text(
-                        'RETRIEVING OLDER RECORDS',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
-                          letterSpacing: 2.0,
+              if (_isFetching && _hasMoreData)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 48),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.primary,
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 16),
+                        const Opacity(
+                          opacity: 0.4,
+                          child: Text(
+                            'RETRIEVING OLDER RECORDS',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.primary,
+                              letterSpacing: 2.0,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 120),
+              SizedBox(height: 80 + MediaQuery.of(context).padding.bottom), // Adaptive spacing for Bottom Nav
             ],
           ),
         ),

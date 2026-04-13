@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/settings_service.dart';
+import '../../settings/models/currency_model.dart';
 import '../widgets/transaction_type_toggle.dart';
 import '../widgets/category_bento_grid.dart';
 import '../../dashboard/models/transaction_model.dart';
@@ -87,7 +89,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         category: _selectedCategory,
         amount: amount,
         type: _isExpense ? TransactionType.debit : TransactionType.credit,
-        icon: _getIconForCategory(_selectedCategory),
+        icon: TransactionModel.getIconForCategory(_selectedCategory),
       );
 
       if (widget.transaction != null) {
@@ -123,28 +125,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       if (mounted) {
         setState(() => _isSaving = false);
       }
-    }
-  }
-
-  IconData _getIconForCategory(String category) {
-    switch (category) {
-      case 'Food':
-        return Icons.restaurant;
-      case 'Shop':
-        return Icons.shopping_bag;
-      case 'Travel':
-        return Icons.commute;
-      case 'Bills':
-        return Icons.receipt_long;
-      case 'Health':
-        return Icons.medical_services;
-      case 'Salary':
-        return Icons.payments;
-      case 'Business':
-        return Icons.work;
-      case 'Other':
-      default:
-        return Icons.more_horiz;
     }
   }
 
@@ -201,14 +181,19 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    '\$',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      color: _isExpense ? AppColors.error : AppColors.onTertiaryContainer,
-                      fontFamily: 'Manrope',
-                    ),
+                  ValueListenableBuilder<Currency>(
+                    valueListenable: SettingsService().reportingCurrency,
+                    builder: (context, currency, child) {
+                      return Text(
+                        currency.symbol,
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: _isExpense ? AppColors.error : AppColors.onTertiaryContainer,
+                          fontFamily: 'Manrope',
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(width: 8),
                   IntrinsicWidth(
@@ -364,7 +349,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       ),
       // Sticky Action Button
       bottomSheet: Container(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 48),
+        padding: EdgeInsets.fromLTRB(
+          24, 
+          16, 
+          24, 
+          MediaQuery.of(context).padding.bottom > 0 
+              ? MediaQuery.of(context).padding.bottom + 16 
+              : 24, // Aesthetic bottom padding if no nav bar
+        ),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,

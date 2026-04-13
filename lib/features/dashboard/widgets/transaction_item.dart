@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/settings_service.dart';
 import '../models/transaction_model.dart';
 
 class TransactionItem extends StatelessWidget {
@@ -17,6 +18,7 @@ class TransactionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settingsService = SettingsService();
     final bool isDebit = transaction.type == TransactionType.debit;
     final Color accentColor = isDebit ? AppColors.error : AppColors.onTertiaryContainer;
     final String formattedDate = DateFormat('MMM d, y').format(transaction.date);
@@ -74,12 +76,17 @@ class TransactionItem extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text(
-                  '${isDebit ? '-' : '+'}\$${transaction.amount.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: accentColor,
-                        fontWeight: FontWeight.bold,
-                      ),
+                ValueListenableBuilder(
+                  valueListenable: settingsService.reportingCurrency,
+                  builder: (context, currency, child) {
+                    return Text(
+                      '${isDebit ? '-' : '+'}${currency.symbol}${transaction.amount.toStringAsFixed(2)}',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: accentColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    );
+                  },
                 ),
               ],
             ),

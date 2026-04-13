@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
+import 'core/services/settings_service.dart';
 import 'features/splash_screen/screens/splash_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SettingsService().init();
   runApp(const MyApp());
 }
 

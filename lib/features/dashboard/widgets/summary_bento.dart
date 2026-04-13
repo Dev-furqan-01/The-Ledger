@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/settings_service.dart';
 import '../models/transaction_model.dart';
 import 'package:intl/intl.dart';
 
@@ -10,6 +11,7 @@ class SummaryBento extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settingsService = SettingsService();
     double totalCredit = 0;
     double totalDebit = 0;
 
@@ -23,30 +25,35 @@ class SummaryBento extends StatelessWidget {
 
     final currencyFormat = NumberFormat.currency(symbol: '', decimalDigits: 2);
 
-    return Row(
-      children: [
-        Expanded(
-          child: _BentoCard(
-            title: 'TOTAL CREDIT',
-            amount: currencyFormat.format(totalCredit),
-            percentage: '+${_calculatePercentage(totalCredit, totalDebit)}%',
-            icon: Icons.trending_up,
-            iconColor: AppColors.onTertiaryContainer,
-            containerColor: AppColors.tertiaryContainer.withOpacity(0.05),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _BentoCard(
-            title: 'TOTAL DEBIT',
-            amount: currencyFormat.format(totalDebit),
-            percentage: '-${_calculatePercentage(totalDebit, totalCredit)}%',
-            icon: Icons.trending_down,
-            iconColor: AppColors.error,
-            containerColor: AppColors.errorContainer.withOpacity(0.2),
-          ),
-        ),
-      ],
+    return ValueListenableBuilder(
+      valueListenable: settingsService.reportingCurrency,
+      builder: (context, currency, child) {
+        return Row(
+          children: [
+            Expanded(
+              child: _BentoCard(
+                title: 'TOTAL CREDIT',
+                amount: '${currency.symbol}${currencyFormat.format(totalCredit)}',
+                percentage: '+${_calculatePercentage(totalCredit, totalDebit)}%',
+                icon: Icons.trending_up,
+                iconColor: AppColors.onTertiaryContainer,
+                containerColor: AppColors.tertiaryContainer.withOpacity(0.05),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _BentoCard(
+                title: 'TOTAL DEBIT',
+                amount: '${currency.symbol}${currencyFormat.format(totalDebit)}',
+                percentage: '-${_calculatePercentage(totalDebit, totalCredit)}%',
+                icon: Icons.trending_down,
+                iconColor: AppColors.error,
+                containerColor: AppColors.errorContainer.withOpacity(0.2),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -123,7 +130,7 @@ class _BentoCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '\$$amount',
+            amount,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: iconColor,
                   fontWeight: FontWeight.bold,

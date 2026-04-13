@@ -33,6 +33,28 @@ class TransactionModel {
     };
   }
 
+  static IconData getIconForCategory(String category) {
+    switch (category) {
+      case 'Food':
+        return Icons.restaurant;
+      case 'Shop':
+        return Icons.shopping_bag;
+      case 'Travel':
+        return Icons.commute;
+      case 'Bills':
+        return Icons.receipt_long;
+      case 'Health':
+        return Icons.medical_services;
+      case 'Salary':
+        return Icons.payments;
+      case 'Business':
+        return Icons.work;
+      case 'Other':
+      default:
+        return Icons.more_horiz;
+    }
+  }
+
   factory TransactionModel.fromMap(Map<String, dynamic> map) {
     return TransactionModel(
       id: map['id'],
@@ -41,7 +63,7 @@ class TransactionModel {
       category: map['category'],
       amount: map['amount'],
       type: TransactionType.values[map['type']],
-      icon: IconData(map['icon'], fontFamily: 'MaterialIcons'),
+      icon: getIconForCategory(map['category']),
     );
   }
 
