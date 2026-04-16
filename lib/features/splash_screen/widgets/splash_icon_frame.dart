@@ -7,6 +7,8 @@ class SplashIconFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       width: 120,
       height: 120,
@@ -32,6 +34,7 @@ class SplashIconFrame extends StatelessWidget {
             width: 80,
             height: 80,
             fit: BoxFit.contain,
+            color: isDark ? Colors.white : null,
             errorBuilder: (context, error, stackTrace) {
               return Icon(
                 Icons.account_balance_wallet_outlined,

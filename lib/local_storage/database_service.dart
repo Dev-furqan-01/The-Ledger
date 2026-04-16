@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import '../features/dashboard/models/transaction_model.dart';
 
 class DatabaseService {
@@ -16,7 +18,21 @@ class DatabaseService {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'the_ledger.db');
+    String path;
+    if (Platform.isAndroid) {
+      Directory dir = Directory('/storage/emulated/0/Documents/TheLedger');
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+      path = join(dir.path, 'the_ledger.db');
+    } else {
+      Directory dir = await getApplicationDocumentsDirectory();
+      path = join(dir.path, 'TheLedger', 'the_ledger.db');
+      if (!await Directory(join(dir.path, 'TheLedger')).exists()) {
+        await Directory(join(dir.path, 'TheLedger')).create(recursive: true);
+      }
+    }
+    
     return await openDatabase(
       path,
       version: 1,

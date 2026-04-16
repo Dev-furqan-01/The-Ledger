@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/settings_service.dart';
@@ -159,70 +160,80 @@ class _HomeViewState extends State<_HomeView> {
   }
 
   void _showActionSheet(BuildContext context, TransactionModel transaction) {
-    final colorScheme = Theme.of(context).colorScheme;
-    showModalBottomSheet(
+    showCupertinoModalPopup(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      builder: (BuildContext context) => CupertinoActionSheet(
+        title: const Text('Manage Transaction'),
+        message: Text(
+          '${transaction.title} - ${NumberFormat.currency(symbol: '', decimalDigits: 2).format(transaction.amount)}',
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
-              ),
+        actions: <CupertinoActionSheetAction>[
+          CupertinoActionSheetAction(
+            onPressed: () async {
+              Navigator.pop(context);
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddTransactionScreen(transaction: transaction),
+                ),
+              );
+              if (result == true) {
+                refresh();
+              }
+            },
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(CupertinoIcons.pencil),
+                SizedBox(width: 8),
+                Text('Edit'),
+              ],
             ),
-            const SizedBox(height: 24),
-            ListTile(
-              leading: Icon(Icons.edit, color: colorScheme.primary),
-              title: const Text('Edit Transaction', style: TextStyle(fontWeight: FontWeight.w600)),
-              onTap: () async {
-                Navigator.pop(context);
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AddTransactionScreen(transaction: transaction),
-                  ),
-                );
-                if (result == true) {
-                  refresh();
-                }
-              },
+          ),
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () async {
+              Navigator.pop(context);
+              final confirmed = await showCupertinoDialog<bool>(
+                context: context,
+                builder: (context) => CupertinoAlertDialog(
+                  title: const Text('Delete Transaction'),
+                  content: const Text('Are you sure you want to delete this transaction?'),
+                  actions: [
+                    CupertinoDialogAction(
+                      isDefaultAction: true,
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancel'),
+                    ),
+                    CupertinoDialogAction(
+                      isDestructiveAction: true,
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Delete'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) {
+                await _dbService.deleteTransaction(transaction.id!);
+                refresh();
+              }
+            },
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(CupertinoIcons.delete),
+                SizedBox(width: 8),
+                Text('Delete'),
+              ],
             ),
-            ListTile(
-              leading: Icon(Icons.delete, color: colorScheme.error),
-              title: Text('Delete Transaction', style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.error)),
-              onTap: () async {
-                Navigator.pop(context);
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Delete Transaction'),
-                    content: const Text('Are you sure you want to delete this transaction?'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: Text('Delete', style: TextStyle(color: colorScheme.error)),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirmed == true) {
-                  await _dbService.deleteTransaction(transaction.id!);
-                  refresh();
-                }
-              },
-            ),
-          ],
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text('Cancel'),
         ),
       ),
     );
@@ -245,6 +256,7 @@ class _HomeViewState extends State<_HomeView> {
               'assets/images/hand icon.png',
               width: 32,
               height: 32,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : null,
             ),
             const SizedBox(width: 8),
             Text(

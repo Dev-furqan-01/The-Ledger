@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/settings_service.dart';
 import '../../settings/models/currency_model.dart';
@@ -200,7 +201,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   IntrinsicWidth(
                     child: TextField(
                       controller: _amountController,
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(8),
+                      ],
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 56,

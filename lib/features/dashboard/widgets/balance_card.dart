@@ -73,27 +73,31 @@ class BalanceCard extends StatelessWidget {
               ValueListenableBuilder(
                 valueListenable: settingsService.reportingCurrency,
                 builder: (context, currency, child) {
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        currency.symbol,
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              color: colorScheme.onPrimary.withOpacity(0.6),
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        currencyFormat.format(balance),
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                              color: colorScheme.onPrimary,
-                              fontSize: 42,
-                              fontWeight: FontWeight.w800,
-                            ),
-                      ),
-                    ],
+                  return FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          currency.symbol,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: colorScheme.onPrimary.withOpacity(0.6),
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          currencyFormat.format(balance),
+                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                color: colorScheme.onPrimary,
+                                fontSize: 42,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
@@ -115,7 +119,13 @@ class BalanceCard extends StatelessWidget {
                             child: CircleAvatar(
                               radius: 16,
                               backgroundColor: colorScheme.surface,
-                              backgroundImage: const AssetImage('assets/images/hand icon.png'),
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/images/hand icon.png',
+                                  fit: BoxFit.cover,
+                                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white : null,
+                                ),
+                              ),
                             ),
                           ),
                         ),

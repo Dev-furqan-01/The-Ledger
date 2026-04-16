@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path_lib;
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../dashboard/models/transaction_model.dart';
+import '../../splash_screen/screens/splash_screen.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/services/settings_service.dart';
 import '../../../local_storage/database_service.dart';
@@ -32,28 +35,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final data = transactions.map((tx) => tx.toMap()).toList();
       final jsonString = jsonEncode(data);
 
-      final directory = await getTemporaryDirectory();
+      String dirPath;
+      if (Platform.isAndroid) {
+        Directory dir = Directory('/storage/emulated/0/Documents/TheLedger');
+        if (!await dir.exists()) {
+          await dir.create(recursive: true);
+        }
+        dirPath = dir.path;
+      } else {
+        Directory dir = await getApplicationDocumentsDirectory();
+        dirPath = path_lib.join(dir.path, 'TheLedger');
+        if (!await Directory(dirPath).exists()) {
+          await Directory(dirPath).create(recursive: true);
+        }
+      }
+
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
       final fileName = 'the_ledger_export_$timestamp.json';
-      final file = File('${directory.path}/$fileName');
+      final file = File('$dirPath/$fileName');
 
       await file.writeAsString(jsonString);
 
       if (mounted) {
-        final result = await Share.shareXFiles(
-          [XFile(file.path)],
-          subject: 'The Ledger Export',
-          text: 'Here is your financial data from The Ledger.',
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Saved locally to: $dirPath/$fileName'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            duration: const Duration(seconds: 3),
+          ),
         );
-
-        if (result.status == ShareResultStatus.success && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Export shared successfully!'),
-              backgroundColor: Theme.of(context).colorScheme.primary,
-            ),
-          );
-        }
       }
     } catch (e) {
       if (mounted) {
@@ -101,16 +111,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
           );
 
           if (confirm == true) {
-            final List<TransactionModel> transactions = jsonData.map((item) => TransactionModel.fromMap(item as Map<String, dynamic>)).toList();
+            final List<TransactionModel> transactions = [];
+            for (var item in jsonData) {
+              if (item is Map<String, dynamic>) {
+                // Ensure ID is null so it gets auto-incremented properly,
+                // or keep the ID if you want to exactly mirror the old database.
+                // Usually it's safer to let SQLite generate new IDs on import
+                // to avoid primary key conflicts.
+                final map = Map<String, dynamic>.from(item);
+                map.remove('id'); 
+                transactions.add(TransactionModel.fromMap(map));
+              }
+            }
+            
             await _dbService.insertTransactions(transactions);
 
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Data imported successfully!'),
+                  content: const Text('Data imported successfully! Reloading...'),
                   backgroundColor: colorScheme.primary,
                 ),
               );
+              
+              // Reload app to show imported data
+              Future.delayed(const Duration(seconds: 1), () {
+                if (mounted) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const SplashScreen()),
+                    (Route<dynamic> route) => false,
+                  );
+                }
+              });
             }
           }
         }
@@ -305,7 +337,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         trailing: Switch(
                           value: _isVaultSyncEnabled,
                           onChanged: (value) {
-                            setState(() => _isVaultSyncEnabled = value);
+                            if (value) {
+                              showCupertinoDialog(
+                                context: context,
+                                builder: (context) => CupertinoAlertDialog(
+                                  title: const Text('Coming Soon'),
+                                  content: const Text('Cloud Vault Sync will be available in a future update.'),
+                                  actions: [
+                                    CupertinoDialogAction(
+                                      child: const Text('OK'),
+                                      onPressed: () => Navigator.pop(context),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            } else {
+                              setState(() => _isVaultSyncEnabled = value);
+                            }
                           },
                           activeColor: Colors.white,
                           activeTrackColor: colorScheme.secondary,
