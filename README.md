@@ -50,7 +50,7 @@ Zepensia follows a **Private Financial Intelligence** aesthetic:
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/zepensia.git
+   git clone https://github.com/Dev-furqan-01/The-Ledger.git
    ```
 2. Navigate to the project directory:
    ```bash
