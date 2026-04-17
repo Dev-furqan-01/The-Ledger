@@ -260,7 +260,7 @@ class _HomeViewState extends State<_HomeView> {
             ),
             const SizedBox(width: 8),
             Text(
-              'The Ledger',
+              'Zepensia',
               style: TextStyle(
                 fontFamily: 'Manrope',
                 fontWeight: FontWeight.bold,

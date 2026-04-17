@@ -1,4 +1,4 @@
-package com.example.the_ledger
+package com.devtrisoft.zepensia
 
 import io.flutter.embedding.android.FlutterActivity
 

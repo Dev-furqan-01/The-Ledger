@@ -11,7 +11,7 @@ class SplashContent {
 
   factory SplashContent.initial() {
     return const SplashContent(
-      title: 'The Ledger',
+      title: 'Zepensia',
       subtitle: 'PRIVATE FINANCIAL INTELLIGENCE',
       statusText: 'SECURE ACCESS GRANTED',
     );

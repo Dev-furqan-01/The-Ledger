@@ -320,7 +320,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'The Ledger',
+              'Zepensia',
               style: textTheme.titleLarge?.copyWith(
                     fontFamily: 'Manrope',
                     fontWeight: FontWeight.bold,

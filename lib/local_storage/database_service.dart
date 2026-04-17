@@ -20,16 +20,16 @@ class DatabaseService {
   Future<Database> _initDatabase() async {
     String path;
     if (Platform.isAndroid) {
-      Directory dir = Directory('/storage/emulated/0/Documents/TheLedger');
+      Directory dir = Directory('/storage/emulated/0/Documents/Zepensia');
       if (!await dir.exists()) {
         await dir.create(recursive: true);
       }
-      path = join(dir.path, 'the_ledger.db');
+      path = join(dir.path, 'zepensia.db');
     } else {
       Directory dir = await getApplicationDocumentsDirectory();
-      path = join(dir.path, 'TheLedger', 'the_ledger.db');
-      if (!await Directory(join(dir.path, 'TheLedger')).exists()) {
-        await Directory(join(dir.path, 'TheLedger')).create(recursive: true);
+      path = join(dir.path, 'Zepensia', 'zepensia.db');
+      if (!await Directory(join(dir.path, 'Zepensia')).exists()) {
+        await Directory(join(dir.path, 'Zepensia')).create(recursive: true);
       }
     }
     

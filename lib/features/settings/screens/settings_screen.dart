@@ -37,21 +37,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       String dirPath;
       if (Platform.isAndroid) {
-        Directory dir = Directory('/storage/emulated/0/Documents/TheLedger');
+        Directory dir = Directory('/storage/emulated/0/Documents/Zepensia');
         if (!await dir.exists()) {
           await dir.create(recursive: true);
         }
         dirPath = dir.path;
       } else {
         Directory dir = await getApplicationDocumentsDirectory();
-        dirPath = path_lib.join(dir.path, 'TheLedger');
+        dirPath = path_lib.join(dir.path, 'Zepensia');
         if (!await Directory(dirPath).exists()) {
           await Directory(dirPath).create(recursive: true);
         }
       }
 
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final fileName = 'the_ledger_export_$timestamp.json';
+      final fileName = 'zepensia_export_$timestamp.json';
       final file = File('$dirPath/$fileName');
 
       await file.writeAsString(jsonString);
@@ -267,7 +267,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Icon(Icons.cached, color: colorScheme.primary, size: 24),
             const SizedBox(width: 8),
             Text(
-              'The Ledger',
+              'Zepensia',
               style: textTheme.titleLarge?.copyWith(
                     fontFamily: 'Manrope',
                     fontWeight: FontWeight.w900,
@@ -494,7 +494,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         const SizedBox(height: 24),
                         Text(
-                          'THE LEDGER V${SettingsConstants.appVersion} • BUILD ${SettingsConstants.buildNumber}',
+                          'ZEPENSIA V${SettingsConstants.appVersion} • BUILD ${SettingsConstants.buildNumber}',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
