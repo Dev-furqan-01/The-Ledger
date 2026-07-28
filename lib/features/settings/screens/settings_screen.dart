@@ -35,33 +35,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final data = transactions.map((tx) => tx.toMap()).toList();
       final jsonString = jsonEncode(data);
 
-      String dirPath;
-      if (Platform.isAndroid) {
-        Directory dir = Directory('/storage/emulated/0/Documents/Zepensia');
-        if (!await dir.exists()) {
-          await dir.create(recursive: true);
-        }
-        dirPath = dir.path;
-      } else {
-        Directory dir = await getApplicationDocumentsDirectory();
-        dirPath = path_lib.join(dir.path, 'Zepensia');
-        if (!await Directory(dirPath).exists()) {
-          await Directory(dirPath).create(recursive: true);
-        }
-      }
-
+      final tempDir = await getTemporaryDirectory();
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
       final fileName = 'zepensia_export_$timestamp.json';
-      final file = File('$dirPath/$fileName');
+      final file = File(path_lib.join(tempDir.path, fileName));
 
       await file.writeAsString(jsonString);
+
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/json')],
+        text: 'Zepensia ledger export ($timestamp)',
+        subject: fileName,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Saved locally to: $dirPath/$fileName'),
+            content: Text('Export ready: $fileName'),
             backgroundColor: Theme.of(context).colorScheme.primary,
-            duration: const Duration(seconds: 3),
+            duration: const Duration(seconds: 2),
           ),
         );
       }

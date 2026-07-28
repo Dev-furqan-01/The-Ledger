@@ -18,21 +18,23 @@ class DatabaseService {
   }
 
   Future<Database> _initDatabase() async {
-    String path;
-    if (Platform.isAndroid) {
-      Directory dir = Directory('/storage/emulated/0/Documents/Zepensia');
-      if (!await dir.exists()) {
-        await dir.create(recursive: true);
-      }
-      path = join(dir.path, 'zepensia.db');
-    } else {
-      Directory dir = await getApplicationDocumentsDirectory();
-      path = join(dir.path, 'Zepensia', 'zepensia.db');
-      if (!await Directory(join(dir.path, 'Zepensia')).exists()) {
-        await Directory(join(dir.path, 'Zepensia')).create(recursive: true);
-      }
+    Directory dir = await getApplicationDocumentsDirectory();
+    final dbDirPath = join(dir.path, 'Zepensia');
+    if (!await Directory(dbDirPath).exists()) {
+      await Directory(dbDirPath).create(recursive: true);
     }
-    
+    final path = join(dbDirPath, 'zepensia.db');
+
+    if (Platform.isAndroid && !await File(path).exists()) {
+      const legacyPath = '/storage/emulated/0/Documents/Zepensia/zepensia.db';
+      final legacyFile = File(legacyPath);
+      try {
+        if (await legacyFile.exists()) {
+          await legacyFile.copy(path);
+        }
+      } catch (_) {}
+    }
+
     return await openDatabase(
       path,
       version: 1,
